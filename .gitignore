@@ -162,6 +162,6 @@ cython_debug/
 #.idea/
 
 #files
-.csv
-.db
-.zip
+*.csv
+*.db
+*.zip
