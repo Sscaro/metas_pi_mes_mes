@@ -26,12 +26,12 @@ class trabajoVentas:
     
             if columna in ventas.columns:
                 ventas[columna] = ventas[columna].replace(valor_viejo, valor_nuevo)
-        print(ventas['estrato'].drop_duplicates())
+        print(ventas['clave_grupo_cte_5'].drop_duplicates())
         #Pi_TD_AU, pi_ce_bn = basePI.ajustes_pi(self.ruta_pi,self.ruta_driver,self.config)
     
 
 
-rutaventas = os.path.join(os.getcwd(),'Ventas','Extracción_información_AGCO_D-I_-_Generación_Metas_SEM18IND.csv')
+rutaventas = os.path.join(os.getcwd(),'Ventas','Extracción_información_AGCO_D-I_-_Generación_Metas___96632318.csv')
 rutayml= os.path.join(os.getcwd(),'Insumos','config.yml')
 archivo_driver = 'Insumos\drivers_transformados.xlsx'
 libro_excel = 'Insumos\PortafolioInfaltable.xlsx'
