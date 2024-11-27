@@ -1,0 +1,65 @@
+nombre_col_ventas :
+  tipo_venta : str
+  clave_oficina_ventas: str
+  oficina_ventas: str
+  clave_Agente: str
+  Agente: str
+  clave_tipologia: str
+  tipologia: str
+  clave_segmento_vital: str
+  segmento_vital: str
+  clave_cliente: str
+  cliente: str
+  codigo_ecom: str
+  clave_grupo_cte_5: str
+  grupo_cte_5: str
+  estrato: str
+  clave_segmento_valor: str
+  segmento_valor: str
+  clave_representante_ventas: str
+  representante_ventas: str
+  vendedor_ecom: str
+  clave_sector: str
+  sector: str
+  clave_categoria: str
+  categoria: str
+  clave_sub_categoria: str
+  sub_categoria: str
+  clave_linea: str
+  linea: str
+  clave_marca: str
+  marca: str
+  clave_material: str
+  material: str
+  anio_mes: str
+  ventas: float
+
+hojasPI:
+  - Infaltable TD
+  - Infaltable AU
+  - Infaltable CE
+  - Infaltable B
+
+
+nombre_col_archivo_pi:
+  col_td_Au:
+    Oficina de ventas: Oficina_ventas
+    Tipología / Segmento 3: tipologia
+    Segmento de Valor CRM: Segmento_valor
+    Estrato: estrato
+    Material Aj: clave_material
+    Excluir de Meta: Excluir_meta
+
+  col_bn_ce:
+    Oficina de ventas: Oficina_ventas # 0
+    Tipología / Segmento 3: tipologia # 1
+    Material Aj: clave_material # 2
+    Excluir de Meta: Excluir_meta # 3
+
+hojaDriver:
+  - Oficina_ventas  #0
+  - tipologia # 1
+  - Segmento_valor # 2
+
+
+
