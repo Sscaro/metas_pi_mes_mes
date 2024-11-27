@@ -61,5 +61,32 @@ hojaDriver:
   - tipologia # 1
   - Segmento_valor # 2
 
+columnas_driver:
+  - 'clave_oficina_ventas'
+  - 'clave_tipologia'
+  - 'pi'
+  - 'estrato'  
+  - 'clave_grupo_cte_5'
 
-
+reemplazos: # parametrización para realizar reemplazos en los archivos de ventas
+  - columnas_condicion: 'estrato'
+    valores:
+      - 'Sin asignar'
+      - 'Sin Asignar'
+      - 'Sin Estrato'
+      - '1'
+      - '2'
+      - '3'
+    valor_nuevo : 'Estrato Bajo'
+  - columnas_condicion: 'estrato'
+    valores:
+      - '4'
+      - '5'
+      - '6'
+    valor_nuevo : 'Estrato Alto'
+  - columnas_condicion: ''
+    valores:
+      - '#'  
+    valor_nuevo : 'AA'
+   
+ 

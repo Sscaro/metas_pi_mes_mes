@@ -5,11 +5,17 @@ import yaml
 class ajustes_pi:
 
     def __init__(self,ruta_pi,ruta_driver,ruta_yml):
-        
+        '''
+        ARG: 
+            ruta_pi. str ruta donde esta el pi enviado por el equipo de portafolio
+            ruta_driver: str donde esta el driver de transformados
+            ruta_yml: str ruta donde esta el archivo de configuración.
+        '''
         self.ruta_pi = ruta_pi
         self.ruta_driver = ruta_driver
-        with open(ruta_yml, 'r',encoding='utf-8') as file:
-            self.config = yaml.safe_load(file)    
+        #with open(ruta_yml, 'r',encoding='utf-8') as file:
+        #    self.config = yaml.safe_load(file)    
+        self.config = ruta_yml
     
     def concatenar_hojas(self,excel,hojas,diccio_columnas):     
         '''
@@ -46,15 +52,20 @@ class ajustes_pi:
         piauttd= self.concatenar_hojas(data_excel,[hojas_leer[0],hojas_leer[1]],diccionario_columnas_PI['col_td_Au']) # hojas AU. TD
         ajustespiauttd = self.merge_driver(piauttd,driver,hojas_driver)  
         ajustespiauttd = ajustespiauttd[ajustespiauttd['Excluir_meta']=='No'] # dejar materiales para la meta             
-        
+        ajustespiauttd['pi'] = 'si'
+        ajustespicebn
+        ## ajustes exclusivos para los canales CE y BN
         picebn= self.concatenar_hojas(data_excel,[hojas_leer[2],hojas_leer[3]],diccionario_columnas_PI['col_bn_ce']) # hojas CE, B
         ajustespicebn = self.merge_driver(picebn,driver,hojas_driver[0:2])  
         ajustespicebn = ajustespicebn[ajustespicebn['Excluir_meta']=='No']
+        ajustespicebn['pi'] = 'si'
         return ajustespiauttd, ajustespicebn
 
+'''
 libro_excel = 'Insumos\PortafolioInfaltable.xlsx'
 archivo_yml= 'Insumos\config.yml'
 archivo_driver = 'Insumos\drivers_transformados.xlsx'
 objeto = ajustes_pi(libro_excel,archivo_driver,archivo_yml)
 objeto.orgarnizar_archivo_pi()
 
+'''
