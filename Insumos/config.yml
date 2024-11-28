@@ -62,11 +62,25 @@ hojaDriver:
   - Segmento_valor # 2
 
 columnas_driver:
-  - 'clave_oficina_ventas'
-  - 'clave_tipologia'
-  - 'pi'
-  - 'estrato'  
-  - 'clave_grupo_cte_5'
+  - 'clave_material' # aplica para au td bn y ce
+  - 'Oficina_ventas' # aplica para au td bn y ce
+  - 'clave_tipologia' # aplica para au td bn y ce
+  - 'pi' # aplica para au td bn y ce
+  - 'estrato'  # aplica para au y td 
+  - 'clave_grupo_cte_5' # aplica para au y td 
+
+uniones: 
+  unionesau_td:
+    - 'clave_material' # aplica para au td bn y ce
+    - 'Oficina_ventas' # aplica para au td bn y ce
+    - 'clave_tipologia' # aplica para au td bn y ce
+    - 'estrato'  # aplica para au y td 
+    - 'clave_grupo_cte_5' # aplica para au y td 
+  unionesce_bn:
+    - 'clave_material' # aplica para au td bn y ce
+    - 'Oficina_ventas' # aplica para au td bn y ce
+    - 'clave_tipologia' # aplica para au td bn y ce
+
 
 reemplazos: # parametrización para realizar reemplazos en los archivos de ventas
   - columnas_condicion: 'estrato'

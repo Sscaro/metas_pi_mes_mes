@@ -13,9 +13,9 @@ class ajustes_pi:
         '''
         self.ruta_pi = ruta_pi
         self.ruta_driver = ruta_driver
-        #with open(ruta_yml, 'r',encoding='utf-8') as file:
-        #    self.config = yaml.safe_load(file)    
-        self.config = ruta_yml
+        with open(ruta_yml, 'r',encoding='utf-8') as file:
+            self.config = yaml.safe_load(file)    
+        #self.config = ruta_yml
     
     def concatenar_hojas(self,excel,hojas,diccio_columnas):     
         '''
@@ -53,12 +53,17 @@ class ajustes_pi:
         ajustespiauttd = self.merge_driver(piauttd,driver,hojas_driver)  
         ajustespiauttd = ajustespiauttd[ajustespiauttd['Excluir_meta']=='No'] # dejar materiales para la meta             
         ajustespiauttd['pi'] = 'si'
-        ajustespicebn
+        print(self.config)  
+        ajustespiauttd = ajustespiauttd[self.config['columnas_driver']]
+
         ## ajustes exclusivos para los canales CE y BN
         picebn= self.concatenar_hojas(data_excel,[hojas_leer[2],hojas_leer[3]],diccionario_columnas_PI['col_bn_ce']) # hojas CE, B
         ajustespicebn = self.merge_driver(picebn,driver,hojas_driver[0:2])  
         ajustespicebn = ajustespicebn[ajustespicebn['Excluir_meta']=='No']
         ajustespicebn['pi'] = 'si'
+        ajustespiauttd = ajustespiauttd[self.config['columnas_driver'][0:4]]
+
+
         return ajustespiauttd, ajustespicebn
 
 '''
