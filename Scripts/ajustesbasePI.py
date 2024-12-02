@@ -1,7 +1,14 @@
 import pandas as pd
 import yaml
 
+'''
+Este modulo tiene una clase la cual se enecarga de organizar el archivo de portafolio infaltable
+selecciona solo las hojas de tradicional, autoservicios con solo algunas columnas: tipologia, material,
+segmetno de valor, estrato y oficina de ventas. y retorna solo los materiales ajustados que se tendrán en cuanta
+para la meta. de manera similar se hace para las hojas bienestar y comercio especializado, en este caso solo se tiene
+en cuenta oficina ventas tipologia material. 
 
+'''
 class ajustes_pi:
 
     def __init__(self,ruta_pi,ruta_driver,ruta_yml):
@@ -53,7 +60,6 @@ class ajustes_pi:
         ajustespiauttd = self.merge_driver(piauttd,driver,hojas_driver)  
         ajustespiauttd = ajustespiauttd[ajustespiauttd['Excluir_meta']=='No'] # dejar materiales para la meta             
         ajustespiauttd['pi'] = 'si'
-        print(self.config)  
         ajustespiauttd = ajustespiauttd[self.config['columnas_driver']]
 
         ## ajustes exclusivos para los canales CE y BN
@@ -61,7 +67,7 @@ class ajustes_pi:
         ajustespicebn = self.merge_driver(picebn,driver,hojas_driver[0:2])  
         ajustespicebn = ajustespicebn[ajustespicebn['Excluir_meta']=='No']
         ajustespicebn['pi'] = 'si'
-        ajustespiauttd = ajustespiauttd[self.config['columnas_driver'][0:4]]
+        ajustespicebn = ajustespicebn[self.config['columnas_driver'][0:4]]
 
 
         return ajustespiauttd, ajustespicebn

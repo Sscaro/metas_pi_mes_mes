@@ -1,0 +1,64 @@
+import pandas as pd
+import os
+import yaml
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    datefmt='%d-%b-%y %H:%M:%S',    
+    handlers=[
+#        logging.FileHandler('log_ejecuciones.txt'),
+        logging.StreamHandler()
+    ]
+)
+
+'''
+Modulo para leer todos los archivos y generar un data frame completo y agrupado
+'''
+
+class consolidar_df:
+
+    def __init__(self,ruta_yml, carpeta,tipo_archivo):
+        '''
+        ARG: ruta_yml: str: ruta con archivo de configuración
+            carpeta: str.  carpeta donde esta las ventas
+            tipo_archivo str. tipo de archivo que se va a consolidar (.csv, .excel, .txt, etc...) precedidas de un .
+        '''
+        self.carpeta = carpeta       
+        with open(ruta_yml, 'r',encoding='utf-8') as file:
+            self.config = yaml.safe_load(file) 
+        self.tipo_archivo = tipo_archivo
+
+    def crear_df(self):
+
+        dataframes = []
+        lista_validacion =[]
+        for archivo in os.listdir(self.carpeta):# lista los archivos de una carpeta
+            if archivo.endswith(self.tipo_archivo): # tendra en cuenta solo los archivos con extesión qu se parametrizaron
+            # Cargar cada archivo como DataFrame
+                df = pd.read_csv(os.path.join(self.carpeta, archivo), header=0,sep =";" ,thousands=".", names=self.config['nombre_col_ventas'].keys(),dtype=self.config['nombre_col_ventas'])
+                dataframes.append(df)
+                suma_validacion = df['ventas'].sum()
+                lista_validacion.append({"Nombre_archivo": archivo, "Ventas_totales": suma_validacion})
+                logging.info('se ha leido archivo {} '.format(archivo))
+
+        df_concatenado = pd.concat(dataframes, ignore_index=True)
+        df_validacion = pd.DataFrame(lista_validacion)
+        df_validacion.to_excel('Salidas\ResultadoxArchivo.xlsx',index=False)
+        
+        # Identificar columnas categóricas (excluyendo la columna 'Ventas')
+        columnas_categoricas = df_concatenado.select_dtypes(exclude=["number"]).columns
+        resultado = df_concatenado.groupby(list(columnas_categoricas))["ventas"].sum().reset_index()
+        #resultado.to_csv('ventas_agrupadas.csv',index=False)
+        logging.info('se exportó archivo de validacion ResultadoxArchivo.xlsx carpeta salidas')
+        logging.info('Se ha consolidado toda la información de los archivos de ventas \n antes de continuar revisar... ')
+        return resultado
+
+
+'''
+yml= 'Insumos\config.yml'
+carpeta = os.path.join(os.getcwd(),'Ventas')
+objeto = consolidar_df(yml,carpeta,'.csv')
+objeto.crear_df()
+'''

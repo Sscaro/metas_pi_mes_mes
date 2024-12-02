@@ -43,7 +43,7 @@ hojasPI:
 
 nombre_col_archivo_pi:
   col_td_Au:
-    Oficina de ventas: Oficina_ventas
+    Oficina de ventas: oficina_ventas
     Tipología / Segmento 3: tipologia
     Segmento de Valor CRM: Segmento_valor
     Estrato: estrato
@@ -51,19 +51,19 @@ nombre_col_archivo_pi:
     Excluir de Meta: Excluir_meta
 
   col_bn_ce:
-    Oficina de ventas: Oficina_ventas # 0
+    Oficina de ventas: oficina_ventas # 0
     Tipología / Segmento 3: tipologia # 1
     Material Aj: clave_material # 2
     Excluir de Meta: Excluir_meta # 3
 
 hojaDriver:
-  - Oficina_ventas  #0
+  - oficina_ventas  #0
   - tipologia # 1
   - Segmento_valor # 2
 
 columnas_driver:
   - 'clave_material' # aplica para au td bn y ce
-  - 'Oficina_ventas' # aplica para au td bn y ce
+  - 'oficina_ventas' # aplica para au td bn y ce
   - 'clave_tipologia' # aplica para au td bn y ce
   - 'pi' # aplica para au td bn y ce
   - 'estrato'  # aplica para au y td 
@@ -72,13 +72,13 @@ columnas_driver:
 uniones: 
   unionesau_td:
     - 'clave_material' # aplica para au td bn y ce
-    - 'Oficina_ventas' # aplica para au td bn y ce
+    - 'oficina_ventas' # aplica para au td bn y ce
     - 'clave_tipologia' # aplica para au td bn y ce
     - 'estrato'  # aplica para au y td 
     - 'clave_grupo_cte_5' # aplica para au y td 
   unionesce_bn:
     - 'clave_material' # aplica para au td bn y ce
-    - 'Oficina_ventas' # aplica para au td bn y ce
+    - 'oficina_ventas' # aplica para au td bn y ce
     - 'clave_tipologia' # aplica para au td bn y ce
 
 
