@@ -32,7 +32,7 @@ nombre_col_ventas :
   clave_material: str
   material: str
   anio_mes: str
-  ventas: float
+  ventas: int
 
 hojasPI:
   - Infaltable TD
@@ -108,4 +108,22 @@ reemplazos: # parametrización para realizar reemplazos en los archivos de venta
       - '06'
     valor_nuevo : 'AA'
    
- 
+
+columnas_usar_universos:
+  directa:
+    - 'Cód. Cliente'
+    - 'Bloq. Pedido'
+
+  indirecta:
+    - 'r_id_agente_comercial'
+    - 'Cod_CRM'
+
+codigos_bloqueo:
+  - '11' # cliente en pre-juri
+  - '08' # Otras Listas Control
+  - '12' # Cliente en proceso j
+
+
+columnas_rezonificacaciones:
+  - 'representante_ventas'
+  - 'codigo_vendedor'

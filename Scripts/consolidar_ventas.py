@@ -33,19 +33,23 @@ class consolidar_df:
     def crear_df(self):
 
         dataframes = []
-        lista_validacion =[]
+        #lista_validacion =[]
         for archivo in os.listdir(self.carpeta):# lista los archivos de una carpeta
             if archivo.endswith(self.tipo_archivo): # tendra en cuenta solo los archivos con extesión qu se parametrizaron
             # Cargar cada archivo como DataFrame
-                df = pd.read_csv(os.path.join(self.carpeta, archivo), header=0,sep =";" ,thousands=".", names=self.config['nombre_col_ventas'].keys(),dtype=self.config['nombre_col_ventas'])
+                try:
+                    df = pd.read_csv(os.path.join(self.carpeta, archivo), header=0,sep =",", thousands=",", names=self.config['nombre_col_ventas'].keys(),dtype=self.config['nombre_col_ventas'])
+                except:
+                    df = pd.read_csv(os.path.join(self.carpeta, archivo), header=0,sep =",",thousands="." , names=self.config['nombre_col_ventas'].keys(),dtype=self.config['nombre_col_ventas'])
+                
+            
                 dataframes.append(df)
-                suma_validacion = df['ventas'].sum()
-                lista_validacion.append({"Nombre_archivo": archivo, "Ventas_totales": suma_validacion})
+        
                 logging.info('se ha leido archivo {} '.format(archivo))
 
         df_concatenado = pd.concat(dataframes, ignore_index=True)
-        df_validacion = pd.DataFrame(lista_validacion)
-        df_validacion.to_excel('Salidas\ResultadoxArchivo.xlsx',index=False)
+        #df_validacion = pd.DataFrame(lista_validacion)
+        #df_validacion.to_excel('Salidas\ResultadoxArchivo.xlsx',index=False)
         
         # Identificar columnas categóricas (excluyendo la columna 'Ventas')
         columnas_categoricas = df_concatenado.select_dtypes(exclude=["number"]).columns
@@ -54,7 +58,27 @@ class consolidar_df:
         logging.info('se exportó archivo de validacion ResultadoxArchivo.xlsx carpeta salidas')
         logging.info('Se ha consolidado toda la información de los archivos de ventas \n antes de continuar revisar... ')
         return resultado
-
+    
+    def validacion(self):
+        lista_validacion =[]
+        for archivo in os.listdir(self.carpeta):# lista los archivos de una carpeta
+            if archivo.endswith(self.tipo_archivo): # tendra en cuenta solo los archivos con extesión qu se parametrizaron
+            # Cargar cada archivo como DataFrame
+                try:
+                    df = pd.read_csv(os.path.join(self.carpeta, archivo), header=0,sep =",", thousands=",", names=self.config['nombre_col_ventas'].keys(),dtype=self.config['nombre_col_ventas'])
+                except:
+                    df = pd.read_csv(os.path.join(self.carpeta, archivo), header=0,sep =",",thousands="." , names=self.config['nombre_col_ventas'].keys(),dtype=self.config['nombre_col_ventas'])
+            
+            suma_validacion = df['ventas'].sum()
+            lista_validacion.append({"Nombre_archivo": archivo, "Ventas_totales": suma_validacion})
+                
+            logging.info('se ha leido archivo {} '.format(archivo))
+        
+        df_validacion = pd.DataFrame(lista_validacion)
+        
+        df_validacion.to_excel('Salidas\ResultadoxArchivo.xlsx',index=False)
+        
+        return logging.info('se exportó archivo de validacion ResultadoxArchivo.xlsx carpeta salidas')
 
 '''
 yml= 'Insumos\config.yml'
