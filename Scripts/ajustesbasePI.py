@@ -57,10 +57,13 @@ class ajustes_pi:
 
         ## ajustes exclusivos para los canales AU y TD
         piauttd= self.concatenar_hojas(data_excel,[hojas_leer[0],hojas_leer[1]],diccionario_columnas_PI['col_td_Au']) # hojas AU. TD
-        ajustespiauttd = self.merge_driver(piauttd,driver,hojas_driver)  
+        ajustespiauttd = self.merge_driver(piauttd,driver,hojas_driver) 
+      
+
         ajustespiauttd = ajustespiauttd[ajustespiauttd['Excluir_meta']=='No'] # dejar materiales para la meta             
         ajustespiauttd['pi'] = 'si'
         ajustespiauttd = ajustespiauttd[self.config['columnas_driver']]
+       
 
         ## ajustes exclusivos para los canales CE y BN
         picebn= self.concatenar_hojas(data_excel,[hojas_leer[2],hojas_leer[3]],diccionario_columnas_PI['col_bn_ce']) # hojas CE, B
@@ -68,7 +71,9 @@ class ajustes_pi:
         ajustespicebn = ajustespicebn[ajustespicebn['Excluir_meta']=='No']
         ajustespicebn['pi'] = 'si'
         ajustespicebn = ajustespicebn[self.config['columnas_driver'][0:4]]
+       
 
+     
 
         return ajustespiauttd, ajustespicebn
 

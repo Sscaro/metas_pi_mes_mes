@@ -14,7 +14,12 @@ logging.basicConfig(
 )
 
 '''
-Modulo para leer todos los archivos y generar un data frame completo y agrupado
+modulo exclusivo para ajustar las ventas descargadas,
+lo que hace este modulo es: 
+    1. consilidar los diferentes archivos de la carpeta ventas y en una sola tabla
+    2. devuelve como resultado un tabla agrupada por mes y un archivo .xlsx con la suma de las ventasy el nombre del archivo
+
+    
 '''
 
 class consolidar_df:
@@ -55,8 +60,8 @@ class consolidar_df:
         columnas_categoricas = df_concatenado.select_dtypes(exclude=["number"]).columns
         resultado = df_concatenado.groupby(list(columnas_categoricas))["ventas"].sum().reset_index()
         #resultado.to_csv('ventas_agrupadas.csv',index=False)
-        logging.info('se exportó archivo de validacion ResultadoxArchivo.xlsx carpeta salidas')
-        logging.info('Se ha consolidado toda la información de los archivos de ventas \n antes de continuar revisar... ')
+     
+        logging.info('Se ha consolidado toda la información de los archivos de ventas \n espera... ')
         return resultado
     
     def validacion(self):

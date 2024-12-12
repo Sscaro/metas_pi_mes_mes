@@ -3,6 +3,12 @@ import zipfile
 
 ## directorio Ventas
 
+'''
+Modulo para descomprimir archivos en formato .zip
+borra los archivos .zip que quedaron.
+
+'''
+
 def descomprimir():
     directorio = os.path.join(os.getcwd(),'Ventas')
     archivos = os.listdir(directorio)
@@ -29,4 +35,4 @@ def descomprimir():
             # Eliminar la carpeta extraída después de mover el archivo CSV      
             os.rmdir(directorio_destino)
             os.remove(os.path.join(os.getcwd(),'Ventas',archivo))
-    return print("Terminao proceso de descomprimir archivos")
+    return print("Termina proceso de descomprimir archivos")

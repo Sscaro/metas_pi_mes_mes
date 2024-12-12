@@ -4,7 +4,15 @@ import numpy as np
 import yaml
 import Scripts.ajustesbasePI as basePI
 import Scripts.ajustes_universos as universos
-
+"""
+Modulo para realizar ajustes sobre la tabla consldiad de ventas
+Nota: proceso previo: "Consolidar ventas"
+    1. agrupar las ventas para tener un consolidado cliente, material, vendedor mensual
+    2. marcar si el material comprado por un cliente hace parte o no del Portafolio infaltble
+    3. marcar si el cliente esta en los universos de cliente (dir e ind) si esta lo marca como Activo.
+    (en la directa no tiene en cuenta algunos codigos de bloqueo)
+    4. concatena el cod_crm con el agente comercial y crea la columna COD_CLIENTE
+"""
 class trabajoVentas:
     def __init__(self,ventas, ruta_yml,ruta_pi,ruta_driver,ruta_universos,ruta_rezonificaciones,mes_ventas,mes_meta):
 
@@ -13,13 +21,17 @@ class trabajoVentas:
             ruta_yml: str ruta archivo de configuración
             ruta_pi: str ruta del portafolio infaltable
             ruta_driver: str ruta driver de transformados. 
+            ruta_universos: ruta str, con dirección de archivo .xlsx con universo
+            ruta_rezonificaciones: ruta str. con dirección de archivo . xlsx con rezonificaciones
+            mes_ventas: str con el nombre del mes de ventas
+            mes_meta: str con nombre mes de calculo de la meta.
         '''
         self.archivo_ventas = ventas # carpeta ventas
         self.ruta_pi= ruta_pi # ruta archivo excel pi
         self.ruta_driver = ruta_driver # ruta transformados
         self.ruta_yml= ruta_yml # ruta archivo configuración
         self.ruta_universos = ruta_universos # ruta universos excel
-        self.ruta_rezonificaciones = ruta_rezonificaciones
+        self.ruta_rezonificaciones = ruta_rezonificaciones # archivo rezonificaciones cod_representate_vtas a cod_vendedor_ecom
         self.mes_ventas = mes_ventas
         self.mes_meta = mes_meta
         with open(ruta_yml, 'r',encoding='utf-8') as file:
@@ -48,14 +60,26 @@ class trabajoVentas:
  
         ventas = pd.merge(ventas,Pi_TD_AU, on =self.config['uniones']['unionesau_td'],how='left')
         ventas = pd.merge(ventas,pi_ce_bn, on =self.config['uniones']['unionesce_bn'],how='left',suffixes=('_AU','_BN'))
-        ventas["PI"] = ventas["pi_AU"].combine_first(ventas["pi_BN"])
+        ventas["PI"] = ventas["pi_AU"].combine_first(ventas["pi_BN"])       
+
+        driver_transformados = pd.read_excel(self.ruta_driver,sheet_name='tipologia',usecols=['clave_tipologia','Canal_trans','Sub_canal_trans'],dtype=str)
+        ventas = pd.merge(ventas,driver_transformados, on = 'clave_tipologia',how='left')
+        ventas.fillna({'Canal_trans':"sin asginar"},inplace=True)
+        ventas.fillna({'Sub_canal_trans':"sin asginar"},inplace=True)
+       
         ventas = ventas.drop(columns=["pi_AU", "pi_BN"])
         ventas["PI"] = ventas["PI"].fillna("NO")
         ventas['COD_CLIENTE'] = np.where(
             ventas['tipo_venta'] == 'Directa', 
             ventas['clave_cliente'], 
-            ventas['clave_Agente'] + '-' + ventas['clave_cliente']
+            ventas['clave_cliente'] + '-' + ventas['clave_Agente']
             )
+        ventas['COD_CLIENTE_ECOM'] = np.where(
+            ventas['tipo_venta'] == 'Directa', 
+            ventas['clave_cliente'], 
+            ventas['codigo_ecom'] + '-' + ventas['clave_Agente']
+            )
+    
         ##Unión archivo con marcación de PI con universo de mes en curso (directa e  indirecta)
         objeto_universos = universos.ajuste_universos(self.ruta_universos,self.ruta_yml)
         universo = objeto_universos.limpieza_universos()
@@ -63,7 +87,7 @@ class trabajoVentas:
 
         ##Uniones con los representantes de ventas de la indirecta
         rezonificaciones = pd.read_excel(self.ruta_rezonificaciones, dtype=str,usecols=self.config['columnas_rezonificacaciones'])
-        ventas = pd.merge(ventas, rezonificaciones, on ='representante_ventas', how='left')
+        ventas = pd.merge(ventas, rezonificaciones, on ='clave_representante_ventas', how='left')
         ## imputaciones de valores nulos de los vendedores de la indirecta, con un "-".
         ventas['codigo_vendedor'] = np.where(
             ventas['codigo_vendedor'].isnull() & (ventas['tipo_venta'] == 'Directa'),
@@ -78,7 +102,7 @@ class trabajoVentas:
         ventas['Mes_meta']= self.mes_meta
 
         
-        ventas.to_csv('prueba_ventas.csv',index=False)
+        #ventas.to_csv('prueba_ventas.csv',index=False)
         return ventas
     
 

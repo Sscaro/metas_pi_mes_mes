@@ -1,8 +1,11 @@
 import Scripts.ajuste_ventas as ajventas
 import Scripts.consolidar_ventas as conventas
 import Scripts.descomprimit_archivos as descomprimir
+import Scripts.trabajoBD as bdatos
+import Scripts.pi_municipio as pi_muni
 import os
 import logging
+import yaml
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,26 +16,120 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
+## funcion decoradora para evaluar que los insumos de cada procedimiento esten disponibles 
+def validacion_insumos_decorator(func):  
+    def wrapper(*args, **kwargs):
+        funcion_nombre = func.__name__
+        
+        insumos = args[0]['listado_insumos'].get(funcion_nombre, [])  # Obtener los insumos de la función del archivo YAML
+        faltantes = [archivo for archivo in insumos if not os.path.exists(os.path.join('Insumos', archivo))]        
+        if faltantes:
+            print(f"Error: Los siguientes insumos faltan en la carpeta 'Insumos': {', '.join(faltantes)}")
+        else:
+            return func(*args, **kwargs)
+    return wrapper
 
-def run():
+
+def cargar_configuracion(ruta_config):
+    """Cargar el archivo YAML con los insumos necesarios para cada función."""
+    with open(ruta_config, 'r') as archivo:
+        return yaml.safe_load(archivo)
+
+
+
+def descomprimir_zip():
+    #descomprimir.descomprimir()   
+    print('descomprime..')
+
+def validacion_ventas():
+    #ruta_yml = os.path.join(os.getcwd(),"Insumos",'config.yml') 
+    objetoBaseVentas= conventas.consolidar_df(ruta_config,carpeta,'.csv')
+    objetoBaseVentas.validacion()
+
+@validacion_insumos_decorator
+def cargar_ventas(insumos):
+    '''
+    funcion que ajusta las ventas marcando los materiales PI y marcando los clientes Activos.
+    '''
+    logging.info('Ingrese los meses con base en los nombre del siguiente listado: \n {}'.format((config['listado_meses'])))
+    mes_ventas_metas = input('Escribe el mes de ventas con base en el siguiente listado : \n formato mmmm:').strip().lower()
+    mes_calculo_meta = input('Ingrese el mes de la meta : \n formato mmmm:').strip().lower()
+    if mes_ventas_metas in config['listado_meses']:
+        # objeto y metodos para consolidar los archivos csv con las ventas
+        objetoBaseVentas= conventas.consolidar_df(ruta_config,carpeta,'.csv')
+        basevetas= objetoBaseVentas.crear_df() # consolida los archivos de ventas
+
+        # objeto y metodos para ajustar archivo con las ventas y marca PI
+        ruta_pi = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][1])
+        ruta_driver_trans = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][0])
+        ruta_universos = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][3])
+        ruta_rezonificaciones = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][2])
+        objetoajustesVentas = ajventas.trabajoVentas(basevetas,ruta_config,ruta_pi,ruta_driver_trans,
+                                                            ruta_universos,ruta_rezonificaciones,mes_ventas_metas,mes_calculo_meta)
+        ventas = objetoajustesVentas.ajustes_archivo_ventas()
+        logging.info('Se han leido correctamente las ventas, comienza proceso de ingesta de informacióna la base de datos')
+        objeto_bd= bdatos.basedatos(ventas)
+        objeto_bd.consolidado_info_bd()
+        logging.info('Se ha cargados las ventas a la base de datos')
+    else:
+        logging.info("El mes {} no es valido \n por favor vuelve y ejecuta el programa y escribe un mes valido.".format(mes_ventas_metas))
+        exit()  # Salir del programa
+
+@validacion_insumos_decorator
+def generar_promos(insumos):
+    print('promos!!')
+
+@validacion_insumos_decorator
+def generar_pi_municipio(insumos):
+    ruta_pi = os.path.join(os.getcwd(),"Insumos",config['listado_insumos']['generar_pi_municipio'][0])
+    pi_muni.consolidaPIformato(ruta_pi)
+    logging.info("Se exportó consolidado a  nivel de municipios exitosamente, revisar carpeta salidas")
+
+
+@validacion_insumos_decorator
+def generar_base_socios(insumos):
+    print('socios!!')
+
+def menu():
     '''
     funcion principal que ejecuta los scripts en el siguiente orden:
         consolidar ventas (leer modulo)
         ajustes ventas (leer detalle en el modulo internamente leer ajusespi)
-
     '''  
+    insumos = cargar_configuracion(ruta_config)
+    #insumos = cargar_configuracion(ruta)
+    opciones = {
+        "1" : ("Descomprimir archvos de ventas", descomprimir_zip),
+        "2" : ("Validación ventas",validacion_ventas),
+        "3" : ("Cargar Ventas",cargar_ventas),
+        "4" : ("Generar portafolio con promos",generar_promos),
+        "5" : ("Generar PI nivel municipio",generar_pi_municipio),
+        "6" : ("Generar PI socios",generar_base_socios)
+    }
     logging.info('Bienvenido a la generación de metas para portafolio infaltable')
-    logging.info('Selecciona proceso que desea ralizar: ')
-    logging.info('1.    Descomprimir archvos de ventas:')
-    logging.info('2.    Validación ventas')
-    logging.info('3.    Cargar Ventas')
+    logging.info('Escriba en número de segun las siguientees opciones que desea realizar')
+    for clave, (nombre, _) in opciones.items():
+        print(f"{clave}. {nombre}")
 
 
+    opcion = input("Seleccione una opción (1-6): ").strip() 
     
-    opcion = input('Escribe alguna de las opciones anteriores: \n  ')
-    carpeta = os.path.join(os.getcwd(),'Ventas')
+    if opcion in opciones:
+        _, funcion = opciones[opcion]
+        try:
+            funcion()
+        except:
+            funcion(insumos)
+    else:
+        print("Opción inválida. El programa se cerrará.")
+        exit()
+
+
+
+
+'''   
     if opcion == '1':
-        descomprimir.descomprimir()   
+        a= 1
     else:
         ### primer modulo consolida las ventas en un solo data frame
         #insumos (algunos insumos pueden ser usados en instancias para otros objetos.)
@@ -48,22 +145,36 @@ def run():
             objetoBaseVentas.validacion()
 
         else:
-            mes_ventas_metas = input('Ingrese el mes de las ventas a cargar: \n formato mmmm:')   
-            mes_calculo_meta = input('Ingrese el mes de la meta : \n formato mmmm:')      
-            # objeto y metodos para consolidar los archivos csv con las ventas
-            objetoBaseVentas= conventas.consolidar_df(ruta_yml,carpeta,'.csv')
-            basevetas= objetoBaseVentas.crear_df() # consolida los archivos de ventas
+            logging.info('Ingrese los meses con base en los nombre del siguiente listado: \n {}'.format((config['listado_meses'])))
+            mes_ventas_metas = input('Escribe el mes de ventas con base en el siguiente listado : \n formato mmmm:').strip().lower()
+            mes_calculo_meta = input('Ingrese el mes de la meta : \n formato mmmm:').strip().lower()
+            if mes_ventas_metas in config['listado_meses']:
+                # objeto y metodos para consolidar los archivos csv con las ventas
+                objetoBaseVentas= conventas.consolidar_df(ruta_yml,carpeta,'.csv')
+                basevetas= objetoBaseVentas.crear_df() # consolida los archivos de ventas
 
-            # objeto y metodos para ajustar archivo con las ventas y marca PI
-            objetoajustesVentas = ajventas.trabajoVentas(basevetas,ruta_yml,ruta_pi,ruta_driver_trans,
-                                                         ruta_universos,ruta_rezonificaciones,mes_ventas_metas,mes_calculo_meta)
-            objetoajustesVentas.ajustes_archivo_ventas()
-
+                # objeto y metodos para ajustar archivo con las ventas y marca PI
+                objetoajustesVentas = ajventas.trabajoVentas(basevetas,ruta_yml,ruta_pi,ruta_driver_trans,
+                                                            ruta_universos,ruta_rezonificaciones,mes_ventas_metas,mes_calculo_meta)
+                ventas = objetoajustesVentas.ajustes_archivo_ventas()
+                logging.info('Se han leido correctamente las ventas, comienza proceso de ingesta de informacióna la base de datos')
+                objeto_bd= bdatos.basedatos(ventas)
+                objeto_bd.consolidado_info_bd()
+                logging.info('Se ha cargados las ventas a la base de datos')
+            else:
+                logging.info("El mes {} no es valido \n por favor vuelve y ejecuta el programa y escribe un mes valido.".format(mes_ventas_metas))
+                exit()  # Salir del programa
     # yml= 'Insumos\config.yml'
     ## carpeta = os.path.join(os.getcwd(),'Ventas')
         #objeto = consolidar_df(yml,carpeta,'.csv')
         #objeto.crear_df()
 
-
+'''
+carpeta = os.path.join(os.getcwd(),'Ventas')
+ruta_config   =  os.path.join(os.getcwd(),"Insumos",'config.yml') 
+#insumos = cargar_configuracion(ruta)  
 if __name__=='__main__':
-    run()
+    #ruta   =  os.path.join(os.getcwd(),"Insumos",'config.yml')    
+    with open(ruta_config, 'r',encoding='utf-8') as file:
+        config = yaml.safe_load(file)   
+    menu()

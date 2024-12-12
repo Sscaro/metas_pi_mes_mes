@@ -167,3 +167,4 @@ cython_debug/
 *.zip
 *.xlsx
 *.xlsb
+*.xlsm

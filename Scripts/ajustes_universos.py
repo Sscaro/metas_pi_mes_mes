@@ -29,11 +29,14 @@ class ajuste_universos:
         universoDirecta = self.lectura_excel('directa','directa')
         universoDirecta.columns = ['COD_CLIENTE','CODIGO_BLOQUEO']
         universoDirecta = universoDirecta[~universoDirecta['CODIGO_BLOQUEO'].isin(self.config['codigos_bloqueo'])]
+       
         del universoDirecta['CODIGO_BLOQUEO']      
         universoIndirecta = self.lectura_excel('indirecta','indirecta')
         universoIndirecta.columns = ['COD_AGENTE','COD_CLIENTE']
-        universoIndirecta['COD_CLIENTE'] = universoIndirecta['COD_AGENTE'] + '-' +universoIndirecta['COD_CLIENTE']          
+        universoIndirecta['COD_CLIENTE'] = universoIndirecta['COD_AGENTE'] + '-' +universoIndirecta['COD_CLIENTE']                     
         del universoIndirecta['COD_AGENTE']      
+        
+        
         pd_universos = pd.concat([universoDirecta,universoIndirecta])
         pd_universos['Estado'] = 'Activo'
         #print(pd_universos.info())

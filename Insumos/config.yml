@@ -1,3 +1,20 @@
+listado_insumos:
+  cargar_ventas:
+    - drivers_transformados.xlsx
+    - PortafolioInfaltable.xlsx
+    - Clientes_activos_Dir_Ind.xlsx  
+    - RezonifacionesIND.xlsx
+  generar_promos:
+    - promos.xlsx
+    - PortafolioInfaltable.xlsx
+  generar_base_socios:
+    - MaestrasSocios.xlsm
+    - ventas
+  generar_pi_municipio:
+    - PortafolioInfaltable.xlsx
+
+
+    
 nombre_col_ventas :
   tipo_venta : str
   clave_oficina_ventas: str
@@ -16,8 +33,8 @@ nombre_col_ventas :
   estrato: str
   clave_segmento_valor: str
   segmento_valor: str
+  clave_jefe_ventas: str
   clave_representante_ventas: str
-  representante_ventas: str
   vendedor_ecom: str
   clave_sector: str
   sector: str
@@ -69,6 +86,9 @@ columnas_driver:
   - 'estrato'  # aplica para au y td 
   - 'clave_grupo_cte_5' # aplica para au y td 
 
+
+
+
 uniones: 
   unionesau_td:
     - 'clave_material' # aplica para au td bn y ce
@@ -118,6 +138,10 @@ columnas_usar_universos:
     - 'r_id_agente_comercial'
     - 'Cod_CRM'
 
+  indirecta_ecom:
+    - 'r_id_agente_comercial'
+    - 'r_id_cliente'
+
 codigos_bloqueo:
   - '11' # cliente en pre-juri
   - '08' # Otras Listas Control
@@ -125,5 +149,36 @@ codigos_bloqueo:
 
 
 columnas_rezonificacaciones:
-  - 'representante_ventas'
+  - 'clave_representante_ventas'
   - 'codigo_vendedor'
+
+
+listado_meses:
+  - ENERO
+  - FEBRERO
+  - MARZO
+  - ABRIL
+  - MAYO
+  - JUNIO
+  - JULIO
+  - AGOSTO
+  - SEPTIEMBRE
+  - OCTUBRE
+  - NOVIEMBRE
+  - DICIEMBRE
+
+  
+
+
+
+query:
+  - SELECT tipo_venta, oficina_ventas,clave_Agente, Agente, Canal_trans, Sub_canal_trans,tipologia,
+      segmento_vital,clave_grupo_cte_5,COD_CLIENTE, clave_representante_ventas,clave_jefe_ventas, codigo_vendedor,estrato,
+      count(material) as Total_materiales_comprados,
+      count (case when PI  = 'si' THEN clave_material END) AS total_materiales_PI_comprados,
+      sum(ventas) as Ventas_totales,
+      sum(case when PI ='si' then ventas END) as ventas_totales_pi
+      FROM ventas  
+      where clave_Agente= '10407248' and  Mes_ventas = 'junio' and Estado = 'Activo' AND Canal_trans in ('Autoservicios','Tradicional','Bienestar','Comercio Especializa') and ventas > 0
+      GROUP BY tipo_venta, oficina_ventas,clave_Agente, Agente, Canal_trans, Sub_canal_trans,tipologia,segmento_vital,clave_grupo_cte_5,
+      COD_CLIENTE, clave_representante_ventas,clave_jefe_ventas,codigo_vendedor,estrato
