@@ -52,10 +52,10 @@ nombre_col_ventas :
   ventas: int
 
 hojasPI:
-  - Infaltable TD
-  - Infaltable AU
-  - Infaltable CE
-  - Infaltable B
+  - Infaltable TD #0
+  - Infaltable AU #1
+  - Infaltable CE #2
+  - Infaltable B #3
 
 
 nombre_col_archivo_pi:
@@ -166,8 +166,6 @@ listado_meses:
   - OCTUBRE
   - NOVIEMBRE
   - DICIEMBRE
-
-  
 
 
 

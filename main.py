@@ -2,6 +2,7 @@ import Scripts.ajuste_ventas as ajventas
 import Scripts.consolidar_ventas as conventas
 import Scripts.descomprimit_archivos as descomprimir
 import Scripts.trabajoBD as bdatos
+import Scripts.ajustes_promos as promos
 import Scripts.pi_municipio as pi_muni
 import os
 import logging
@@ -77,7 +78,13 @@ def cargar_ventas(insumos):
 
 @validacion_insumos_decorator
 def generar_promos(insumos):
-    print('promos!!')
+    ruta_portafolio = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['generar_promos'][1])
+    ruta_promo = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['generar_promos'][0])
+    hojas = config['hojasPI']
+    promos.generar_archivo_promo(ruta_portafolio,ruta_promo,hojas)    
+    logging.info("Se exportó archivo con relación de promos exitosamente, revisar carpeta salidas")
+
+    
 
 @validacion_insumos_decorator
 def generar_pi_municipio(insumos):
@@ -123,8 +130,6 @@ def menu():
     else:
         print("Opción inválida. El programa se cerrará.")
         exit()
-
-
 
 
 '''   
