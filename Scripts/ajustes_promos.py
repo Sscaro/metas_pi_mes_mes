@@ -24,8 +24,8 @@ def generar_archivo_promo(ruta_portafolio:str, ruta_promos:str,hojas:list):
     
     for hoja in hojas:
         consolidado = portafolio[hoja]
-        consolidado = pd.merge(consolidado,archivo_promo,  how = 'left', left_on="Material", right_on= "cod_material")         
-        consolidado["Material Aj2"]= np.where(consolidado["cod_promo"].isna(),consolidado["Material"] ,consolidado["cod_promo"])                
+        consolidado = pd.merge(consolidado,archivo_promo,  how = 'left', left_on="Material Impactos", right_on= "cod_material")         
+        consolidado["Material Aj2"]= np.where(consolidado["cod_promo"].isna(),consolidado["Material Impactos"] ,consolidado["cod_promo"])                
         consolidado.to_excel(writer, sheet_name=hoja, index=False)
     
     writer.close()

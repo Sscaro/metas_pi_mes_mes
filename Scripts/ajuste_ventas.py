@@ -14,7 +14,7 @@ Nota: proceso previo: "Consolidar ventas"
     4. concatena el cod_crm con el agente comercial y crea la columna COD_CLIENTE
 """
 class trabajoVentas:
-    def __init__(self,ventas, ruta_yml,ruta_pi,ruta_driver,ruta_universos,ruta_rezonificaciones,mes_ventas,mes_meta):
+    def __init__(self,ventas, ruta_yml,ruta_pi,ruta_driver,ruta_universos,mes_ventas,mes_meta):
 
         '''
         ARG: ventas: df con la información de ventas consolidada
@@ -26,12 +26,11 @@ class trabajoVentas:
             mes_ventas: str con el nombre del mes de ventas
             mes_meta: str con nombre mes de calculo de la meta.
         '''
-        self.archivo_ventas = ventas # carpeta ventas
+        self.archivo_ventas = ventas # df ventas
         self.ruta_pi= ruta_pi # ruta archivo excel pi
         self.ruta_driver = ruta_driver # ruta transformados
         self.ruta_yml= ruta_yml # ruta archivo configuración
         self.ruta_universos = ruta_universos # ruta universos excel
-        self.ruta_rezonificaciones = ruta_rezonificaciones # archivo rezonificaciones cod_representate_vtas a cod_vendedor_ecom
         self.mes_ventas = mes_ventas
         self.mes_meta = mes_meta
         with open(ruta_yml, 'r',encoding='utf-8') as file:
@@ -69,40 +68,18 @@ class trabajoVentas:
        
         ventas = ventas.drop(columns=["pi_AU", "pi_BN"])
         ventas["PI"] = ventas["PI"].fillna("NO")
-        ventas['COD_CLIENTE'] = np.where(
-            ventas['tipo_venta'] == 'Directa', 
-            ventas['clave_cliente'], 
-            ventas['clave_cliente'] + '-' + ventas['clave_Agente']
-            )
-        ventas['COD_CLIENTE_ECOM'] = np.where(
-            ventas['tipo_venta'] == 'Directa', 
-            ventas['clave_cliente'], 
-            ventas['codigo_ecom'] + '-' + ventas['clave_Agente']
-            )
+        
     
         ##Unión archivo con marcación de PI con universo de mes en curso (directa e  indirecta)
         objeto_universos = universos.ajuste_universos(self.ruta_universos,self.ruta_yml)
-        universo = objeto_universos.limpieza_universos()
-        ventas = pd.merge(ventas,universo, on ='COD_CLIENTE',how='left')
+        universodir = objeto_universos.limpieza_universos_dir()
+        ventas = pd.merge(ventas,universodir, on ='clave_cliente',how='left')
 
-        ##Uniones con los representantes de ventas de la indirecta
-        rezonificaciones = pd.read_excel(self.ruta_rezonificaciones, dtype=str,usecols=self.config['columnas_rezonificacaciones'])
-        ventas = pd.merge(ventas, rezonificaciones, on ='clave_representante_ventas', how='left')
-        ## imputaciones de valores nulos de los vendedores de la indirecta, con un "-".
-        ventas['codigo_vendedor'] = np.where(
-            ventas['codigo_vendedor'].isnull() & (ventas['tipo_venta'] == 'Directa'),
-            ventas['clave_representante_ventas'],
-            np.where(
-                ventas['codigo_vendedor'].isnull(),
-                '-',
-                ventas['codigo_vendedor']
-            )
-        )
         ventas['Mes_ventas'] = self.mes_ventas 
         ventas['Mes_meta']= self.mes_meta
 
         
-        #ventas.to_csv('prueba_ventas.csv',index=False)
+        ventas.to_csv('prueba_ventas.csv',index=False)
         return ventas
     
 

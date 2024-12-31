@@ -57,9 +57,7 @@ class ajustes_pi:
 
         ## ajustes exclusivos para los canales AU y TD
         piauttd= self.concatenar_hojas(data_excel,[hojas_leer[0],hojas_leer[1]],diccionario_columnas_PI['col_td_Au']) # hojas AU. TD
-        ajustespiauttd = self.merge_driver(piauttd,driver,hojas_driver) 
-      
-
+        ajustespiauttd = self.merge_driver(piauttd,driver,hojas_driver)
         ajustespiauttd = ajustespiauttd[ajustespiauttd['Excluir_meta']=='No'] # dejar materiales para la meta             
         ajustespiauttd['pi'] = 'si'
         ajustespiauttd = ajustespiauttd[self.config['columnas_driver']]

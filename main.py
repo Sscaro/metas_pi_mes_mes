@@ -2,6 +2,7 @@ import Scripts.ajuste_ventas as ajventas
 import Scripts.consolidar_ventas as conventas
 import Scripts.descomprimit_archivos as descomprimir
 import Scripts.trabajoBD as bdatos
+import Scripts.ajustes_universos as universos
 import Scripts.ajustes_promos as promos
 import Scripts.pi_municipio as pi_muni
 import os
@@ -37,15 +38,14 @@ def cargar_configuracion(ruta_config):
         return yaml.safe_load(archivo)
 
 
-
 def descomprimir_zip():
-    #descomprimir.descomprimir()   
+    descomprimir.descomprimir()   
     print('descomprime..')
 
 def validacion_ventas():
     #ruta_yml = os.path.join(os.getcwd(),"Insumos",'config.yml') 
     objetoBaseVentas= conventas.consolidar_df(ruta_config,carpeta,'.csv')
-    objetoBaseVentas.validacion()
+    objetoBaseVentas.validacion('ventas_cop')
 
 @validacion_insumos_decorator
 def cargar_ventas(insumos):
@@ -53,29 +53,44 @@ def cargar_ventas(insumos):
     funcion que ajusta las ventas marcando los materiales PI y marcando los clientes Activos.
     '''
     logging.info('Ingrese los meses con base en los nombre del siguiente listado: \n {}'.format((config['listado_meses'])))
-    mes_ventas_metas = input('Escribe el mes de ventas con base en el siguiente listado : \n formato mmmm:').strip().lower()
-    mes_calculo_meta = input('Ingrese el mes de la meta : \n formato mmmm:').strip().lower()
+    mes_ventas_metas = input('Escribe el mes de ventas con base en el siguiente listado : \n formato mmmm:').strip().upper()
+    mes_calculo_meta = input('Ingrese el mes de la meta : \n formato mmmm:').strip().upper()
+    ruta_universos = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][2])
     if mes_ventas_metas in config['listado_meses']:
         # objeto y metodos para consolidar los archivos csv con las ventas
         objetoBaseVentas= conventas.consolidar_df(ruta_config,carpeta,'.csv')
-        basevetas= objetoBaseVentas.crear_df() # consolida los archivos de ventas
-
+        #base_ventas_directa= objetoBaseVentas.crear_df() # consolida los archivos de ventas de la directa.
+        
+        
+        base_ventas_indirecta= objetoBaseVentas.crear_df(directa=False)
+        base_ventas_indirecta = objetoBaseVentas.ajustes_ventas_ind(base_ventas_indirecta,os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][3]))
+        objeto_universo = universos.ajuste_universos(ruta_universos,ruta_config)
+        
+        ruta_driver_po = os.path.join(os.getcwd(),'Insumos','driver_portafolio.xlsx')
+        base_ventas_indirecta = objeto_universo.Agregar_fuerza_portafolio(ruta_driver_po,base_ventas_indirecta)
+        
+        
+        #base_ventas_indirecta.to_csv('Marcacion_PI_Ind.csv',index=False,decimal=",",sep=";")
+        
+        '''
         # objeto y metodos para ajustar archivo con las ventas y marca PI
         ruta_pi = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][1])
         ruta_driver_trans = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][0])
-        ruta_universos = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][3])
-        ruta_rezonificaciones = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][2])
-        objetoajustesVentas = ajventas.trabajoVentas(basevetas,ruta_config,ruta_pi,ruta_driver_trans,
-                                                            ruta_universos,ruta_rezonificaciones,mes_ventas_metas,mes_calculo_meta)
+        ruta_universos = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][2])
+        #ruta_rezonificaciones = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][2])
+        objetoajustesVentas = ajventas.trabajoVentas(base_ventas_directa,ruta_config,ruta_pi,ruta_driver_trans,
+                                                            ruta_universos,mes_ventas_metas,mes_calculo_meta)
+        
         ventas = objetoajustesVentas.ajustes_archivo_ventas()
         logging.info('Se han leido correctamente las ventas, comienza proceso de ingesta de informacióna la base de datos')
-        objeto_bd= bdatos.basedatos(ventas)
-        objeto_bd.consolidado_info_bd()
-        logging.info('Se ha cargados las ventas a la base de datos')
+        
+        #objeto_bd= bdatos.basedatos(ventas)
+        #objeto_bd.consolidado_info_bd()
+        #logging.info('Se ha cargados las ventas a la base de datos')
     else:
         logging.info("El mes {} no es valido \n por favor vuelve y ejecuta el programa y escribe un mes valido.".format(mes_ventas_metas))
         exit()  # Salir del programa
-
+    '''     
 @validacion_insumos_decorator
 def generar_promos(insumos):
     ruta_portafolio = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['generar_promos'][1])
@@ -85,17 +100,23 @@ def generar_promos(insumos):
     logging.info("Se exportó archivo con relación de promos exitosamente, revisar carpeta salidas")
 
     
-
 @validacion_insumos_decorator
 def generar_pi_municipio(insumos):
     ruta_pi = os.path.join(os.getcwd(),"Insumos",config['listado_insumos']['generar_pi_municipio'][0])
     pi_muni.consolidaPIformato(ruta_pi)
     logging.info("Se exportó consolidado a  nivel de municipios exitosamente, revisar carpeta salidas")
 
-
 @validacion_insumos_decorator
 def generar_base_socios(insumos):
     print('socios!!')
+
+def calculoUniversosIndirecta():
+    
+    ruta_universos = os.path.join(os.getcwd(),'Insumos',config['listado_insumos']['cargar_ventas'][2])
+    objeto_universo = universos.ajuste_universos(ruta_universos,ruta_config)
+    ruta_driver_po = os.path.join(os.getcwd(),'Insumos','driver_portafolio.xlsx')
+    objeto_universo.Agregar_fuerza_portafolio(ruta_driver_po)
+
 
 def menu():
     '''
@@ -111,13 +132,13 @@ def menu():
         "3" : ("Cargar Ventas",cargar_ventas),
         "4" : ("Generar portafolio con promos",generar_promos),
         "5" : ("Generar PI nivel municipio",generar_pi_municipio),
-        "6" : ("Generar PI socios",generar_base_socios)
+        "6" : ("Generar PI socios",generar_base_socios),
+        "7" :  ("prueba_indirecta",calculoUniversosIndirecta), 
     }
     logging.info('Bienvenido a la generación de metas para portafolio infaltable')
     logging.info('Escriba en número de segun las siguientees opciones que desea realizar')
     for clave, (nombre, _) in opciones.items():
         print(f"{clave}. {nombre}")
-
 
     opcion = input("Seleccione una opción (1-6): ").strip() 
     
@@ -130,7 +151,6 @@ def menu():
     else:
         print("Opción inválida. El programa se cerrará.")
         exit()
-
 
 '''   
     if opcion == '1':
@@ -175,6 +195,7 @@ def menu():
         #objeto.crear_df()
 
 '''
+
 carpeta = os.path.join(os.getcwd(),'Ventas')
 ruta_config   =  os.path.join(os.getcwd(),"Insumos",'config.yml') 
 #insumos = cargar_configuracion(ruta)  

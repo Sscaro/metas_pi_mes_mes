@@ -2,17 +2,20 @@ listado_insumos:
   cargar_ventas:
     - drivers_transformados.xlsx
     - PortafolioInfaltable.xlsx
-    - Clientes_activos_Dir_Ind.xlsx  
-    - RezonifacionesIND.xlsx
+    - Clientes_activos_Dir_Ind.xlsx
+    - driver_portafolio.xlsx
+
+
   generar_promos:
     - promos.xlsx
     - PortafolioInfaltable.xlsx
+
   generar_base_socios:
     - MaestrasSocios.xlsm
     - ventas
+
   generar_pi_municipio:
     - PortafolioInfaltable.xlsx
-
 
     
 nombre_col_ventas :
@@ -28,14 +31,15 @@ nombre_col_ventas :
   clave_cliente: str
   cliente: str
   codigo_ecom: str
+  cod_municipio: str
   clave_grupo_cte_5: str
   grupo_cte_5: str
   estrato: str
   clave_segmento_valor: str
   segmento_valor: str
-  clave_jefe_ventas: str
-  clave_representante_ventas: str
-  vendedor_ecom: str
+  clave_jefe_vtas: str
+  clave_vendedor: str
+  nombre_vendendor: str
   clave_sector: str
   sector: str
   clave_categoria: str
@@ -49,7 +53,9 @@ nombre_col_ventas :
   clave_material: str
   material: str
   anio_mes: str
-  ventas: int
+  ventas_cop: float
+  ventas_un : float
+  ventas_kg : float
 
 hojasPI:
   - Infaltable TD #0
@@ -57,24 +63,23 @@ hojasPI:
   - Infaltable CE #2
   - Infaltable B #3
 
-
 nombre_col_archivo_pi:
   col_td_Au:
     Oficina de ventas: oficina_ventas
     Tipología / Segmento 3: tipologia
     Segmento de Valor CRM: Segmento_valor
     Estrato: estrato
-    Material Aj: clave_material
+    Material Meta: clave_material
     Excluir de Meta: Excluir_meta
 
   col_bn_ce:
     Oficina de ventas: oficina_ventas # 0
     Tipología / Segmento 3: tipologia # 1
-    Material Aj: clave_material # 2
+    Material Meta: clave_material # 2
     Excluir de Meta: Excluir_meta # 3
 
 hojaDriver:
-  - oficina_ventas  #0
+  - oficina_ventas #0
   - tipologia # 1
   - Segmento_valor # 2
 
@@ -85,9 +90,6 @@ columnas_driver:
   - 'pi' # aplica para au td bn y ce
   - 'estrato'  # aplica para au y td 
   - 'clave_grupo_cte_5' # aplica para au y td 
-
-
-
 
 uniones: 
   unionesau_td:
@@ -128,20 +130,20 @@ reemplazos: # parametrización para realizar reemplazos en los archivos de venta
       - '06'
     valor_nuevo : 'AA'
    
-
 columnas_usar_universos:
   directa:
     - 'Cód. Cliente'
     - 'Bloq. Pedido'
 
   indirecta:
-    - 'r_id_agente_comercial'
-    - 'Cod_CRM'
+    - 'r_id_agente_comercial' # 0 codigo agente
+    - 'Cod_CRM'  #1  codigo crm del cliente
+    - 'r_id_vendedor'  #2 codigo vendedor ecom
+    - 'Fuerzas en el rutero'  #4 nombre de la fuerza actual
 
-  indirecta_ecom:
-    - 'r_id_agente_comercial'
-    - 'r_id_cliente'
-
+  imputacion_fuerza:
+    '208 - MULTIMARCA MIXTO'
+  
 codigos_bloqueo:
   - '11' # cliente en pre-juri
   - '08' # Otras Listas Control
@@ -151,7 +153,6 @@ codigos_bloqueo:
 columnas_rezonificacaciones:
   - 'clave_representante_ventas'
   - 'codigo_vendedor'
-
 
 listado_meses:
   - ENERO
@@ -166,8 +167,6 @@ listado_meses:
   - OCTUBRE
   - NOVIEMBRE
   - DICIEMBRE
-
-
 
 query:
   - SELECT tipo_venta, oficina_ventas,clave_Agente, Agente, Canal_trans, Sub_canal_trans,tipologia,

@@ -36,14 +36,14 @@ def consolidaPIformato(nombrearhivo):
     bases = concatenarportafolio(ruta_pi)
     hojasAUYD = ["Infaltable TD","Infaltable AU"]
     baseAUTD = bases.concatenadohojas(hojasAUYD)
-    columnasAUTDEliminar = ["Material","Nombre Material","Excluir de Meta","Innovación"]
+    columnasAUTDEliminar = ["Material Meta","Nombre Material Meta","Excluir de Meta","Innovación"]
     baseAUTD = eliminarcolumnas(baseAUTD,columnasAUTDEliminar)
-    baseAUTD.rename(columns={'Material Aj':'Material','Nombre Material Aj':'Nombre Material'},inplace=True)
+    baseAUTD.rename(columns={'Material Impactos':'Material','Nombre Material Impactos':'Nombre Material'},inplace=True)
     baseAUTD.drop_duplicates(inplace=True,keep='first')
     hojasBCE = ["Infaltable B","Infaltable CE"]
     baseBCE = bases.concatenadohojas(hojasBCE)    
     baseBCE = eliminarcolumnas(baseBCE,columnasAUTDEliminar)
-    baseBCE.rename(columns={'Material Aj':'Material','Nombre Material Aj':'Nombre Material'},inplace=True)
+    baseBCE.rename(columns={'Material Impactos':'Material','Nombre Material Impactos':'Nombre Material'},inplace=True)
     baseBCE.drop_duplicates(inplace=True,keep='first')
     writer = pd.ExcelWriter('Salidas\consolidadopi.xlsx')
     baseAUTD.to_excel(writer, sheet_name="PI No Municipio", index=False)
