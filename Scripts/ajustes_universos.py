@@ -40,13 +40,13 @@ class ajuste_universos:
     def limpieza_universos_ind(self):
          universoInd = self.lectura_excel('indirecta','indirecta')
          universoInd = universoInd.drop_duplicates(keep='first')
-         universo_cliente = universoInd[['Cod_CRM','r_id_vendedor']].drop_duplicates(subset='Cod_CRM')
+         universo_cliente = universoInd[['Cod_CRM','r_id_vendedor','Tipologia Aj']].drop_duplicates(subset='Cod_CRM')
          universo_cliente = universo_cliente.rename(columns={'Cod_CRM':'clave_cliente'})
          
          listado_columas = self.config['columnas_usar_universos']['indirecta']
          # se crea un data frame para saber cual es la fuerza del portafolio más reprensentativa a nivel Agente - vendedor
          # listado_columas orden: 0: agente, 1: Cod Crm 2: cod_vendedor, 3:fuerza
-         
+         del universoInd[listado_columas[4]]
          fuerza_vendedor = universoInd[[listado_columas[0],listado_columas[2],listado_columas[3]]].dropna()
          num_clientes_vendedor = fuerza_vendedor.value_counts().reset_index().sort_values(by=[listado_columas[2],'count'],ascending=False)
          # data frame imputaciones para completar los vendedores sin fuerza portafolio
@@ -59,6 +59,7 @@ class ajuste_universos:
          universoInd = universoInd.sort_values(by=[listado_columas[0], listado_columas[1], 'Descripcion_Fuerza'], ascending=True)
          universoInd = universoInd.drop_duplicates(subset=listado_columas[0:3],keep='first')
          universoInd = universoInd.drop(columns=[listado_columas[3],'Fuerzas en el rutero_imputado'],)
+         
          universoactivo = universoInd[['r_id_agente_comercial','Cod_CRM']].drop_duplicates(subset=['r_id_agente_comercial','Cod_CRM'], keep='first')
          universoactivo['Estado'] = 'Activo'
       
@@ -72,12 +73,12 @@ class ajuste_universos:
         
         #ventas = pd.read_csv('Marcacion_PI_Ind.csv',sep=";",dtype=str)
         ventas = pd.merge(ventas,universoactivo, on = ['clave_Agente','clave_cliente'], how='left')
-        print('primer_info')
-        print(ventas.info())
+        #print('primer_info')
+        #print(ventas.info())
         driver_fuerzas = pd.read_excel(ruta_driver_portafolio, sheet_name='driver_fuerza', dtype=str)       
         data_expandida = pd.merge(universoAjuste,driver_fuerzas,on='Codigo_Fuerza',how='left')
-        print('segundo_info')
-        print(data_expandida.info())
+        #print('segundo_info')
+        #print(data_expandida.info())
         data_expandida = data_expandida.drop_duplicates(subset=['clave_cliente','Cod_portafolio'],keep='first')
      
       
@@ -88,11 +89,11 @@ class ajuste_universos:
         col_eliminar = ['Cod_portafolio','Codigo_Fuerza','Nombre_fuerza','cod_vendedor']
         for col in col_eliminar:
             del ventas[col]
-        print('tercer_info')
+        print('Se ha imputado el vendedor segun su fuerza y portafolio')
         print(ventas.info())
         #ventas.to_csv('resultado.csv',index=False, sep=";", decimal=",")
         reultado_ventas = self.__imputacion_nulos(ventas,universo_cliente_vende)
-        reultado_ventas.to_csv('resultado3.csv',index=False, sep=";", decimal=",")
+        #reultado_ventas.to_csv('resultado3.csv',index=False, sep=";", decimal=",")
         return reultado_ventas
     
     def __imputacion_nulos(self, df,universo_cliente_vende):
@@ -105,12 +106,13 @@ class ajuste_universos:
         .drop_duplicates(subset=['clave_cliente'], keep='first')
         .rename(columns={'clave_vendedor': 'Imputed_vendedor_cliente'}))
         
+        ## paso 1 imputar el vendedor con base en los vendedores que atendieron el cliente.
         df = df.merge(cliente_vendedor[['clave_cliente', 'Imputed_vendedor_cliente']], 
               on='clave_cliente', 
               how='left')
         df['clave_vendedor'] = df['clave_vendedor'].fillna(df['Imputed_vendedor_cliente'])
 
-        ## paso imputar vendedor con primer vendedor que encuentre en el universo
+        ## paso 2 imputar vendedor con primer vendedor que encuentre en el universo
         if df['clave_vendedor'].isnull().any():
             df = df.merge(universo_cliente_vende, on = 'clave_cliente',how='left')
             df['clave_vendedor'] = df['clave_vendedor'].fillna(df['r_id_vendedor'])
@@ -129,10 +131,13 @@ class ajuste_universos:
                   on='clave_Agente', 
                   how='left')
             df['clave_vendedor'] = df['clave_vendedor'].fillna(df['Imputed_vendedor_agente'])
-        df = df.drop(columns=['Imputed_vendedor_cliente', 'Imputed_vendedor_agente','r_id_vendedor'], errors='ignore')
+        
+        df["tipologia"] = df["Tipologia Aj"].replace("", None).fillna(df["tipologia"])
+        df = df.drop(columns=['Imputed_vendedor_cliente', 'Imputed_vendedor_agente','r_id_vendedor','Tipologia Aj'], errors='ignore')
+                        
         return df
-'''
 
+'''
 universo = os.path.join(os.getcwd(),'Insumos','Clientes_activos_Dir_Ind.xlsx')
 yml = os.path.join(os.getcwd(),'Insumos','config.yml')
 objeto = ajuste_universos(universo,yml)

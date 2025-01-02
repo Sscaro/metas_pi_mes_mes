@@ -139,7 +139,8 @@ columnas_usar_universos:
     - 'r_id_agente_comercial' # 0 codigo agente
     - 'Cod_CRM'  #1  codigo crm del cliente
     - 'r_id_vendedor'  #2 codigo vendedor ecom
-    - 'Fuerzas en el rutero'  #4 nombre de la fuerza actual
+    - 'Fuerzas en el rutero'  #3 nombre de la fuerza actual
+    - 'Tipologia Aj' # 4 tipologia aj
 
   imputacion_fuerza:
     '208 - MULTIMARCA MIXTO'

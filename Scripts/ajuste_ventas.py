@@ -14,7 +14,7 @@ Nota: proceso previo: "Consolidar ventas"
     4. concatena el cod_crm con el agente comercial y crea la columna COD_CLIENTE
 """
 class trabajoVentas:
-    def __init__(self,ventas, ruta_yml,ruta_pi,ruta_driver,ruta_universos,mes_ventas,mes_meta):
+    def __init__(self,ventas,ventasInd, ruta_yml,ruta_pi,ruta_driver,ruta_universos,mes_ventas,mes_meta):
 
         '''
         ARG: ventas: df con la información de ventas consolidada
@@ -27,6 +27,7 @@ class trabajoVentas:
             mes_meta: str con nombre mes de calculo de la meta.
         '''
         self.archivo_ventas = ventas # df ventas
+        self.archivo_ventas_ind = ventasInd
         self.ruta_pi= ruta_pi # ruta archivo excel pi
         self.ruta_driver = ruta_driver # ruta transformados
         self.ruta_yml= ruta_yml # ruta archivo configuración
@@ -42,7 +43,13 @@ class trabajoVentas:
         que hacen parte del PI 
         '''
         ventas = self.archivo_ventas.copy()
-        
+
+        ##Unión archivo con marcación de PI con universo de mes en curso (directa e  indirecta)
+        objeto_universos = universos.ajuste_universos(self.ruta_universos,self.ruta_yml)
+        universodir = objeto_universos.limpieza_universos_dir()        
+        ventas = pd.merge(ventas,universodir, on ='clave_cliente',how='left')
+        ventas = pd.concat([ventas,self.archivo_ventas_ind],ignore_index=True)
+       
         #Esta parte realiza reemplazos que se parametrizan en el archivo de configuración
         for replacement in self.config['reemplazos']:
             columna = replacement['columnas_condicion']
@@ -51,7 +58,6 @@ class trabajoVentas:
     
             if columna in self.archivo_ventas.columns:
                 ventas[columna] = ventas[columna].replace(valor_viejo, valor_nuevo)
-
 
         ###luego de los reemplazos en esta parte se realiza el merge para marcar si el material es PI
         objeto_ajustesPI  = basePI.ajustes_pi(self.ruta_pi,self.ruta_driver,self.ruta_yml)
@@ -67,21 +73,12 @@ class trabajoVentas:
         ventas.fillna({'Sub_canal_trans':"sin asginar"},inplace=True)
        
         ventas = ventas.drop(columns=["pi_AU", "pi_BN"])
-        ventas["PI"] = ventas["PI"].fillna("NO")
-        
-    
-        ##Unión archivo con marcación de PI con universo de mes en curso (directa e  indirecta)
-        objeto_universos = universos.ajuste_universos(self.ruta_universos,self.ruta_yml)
-        universodir = objeto_universos.limpieza_universos_dir()
-        ventas = pd.merge(ventas,universodir, on ='clave_cliente',how='left')
-
+        ventas["PI"] = ventas["PI"].fillna("NO")    
         ventas['Mes_ventas'] = self.mes_ventas 
         ventas['Mes_meta']= self.mes_meta
-
         
-        ventas.to_csv('prueba_ventas.csv',index=False)
         return ventas
-    
+  
 
 
 '''
